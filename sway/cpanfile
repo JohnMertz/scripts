@@ -1,0 +1,5 @@
+requires 'perl', '5.40.0';
+requires 'AnyEvent::I3';
+requires 'Cpanel::JSON::XS';
+requires 'JSON::PP';
+requires 'Proc::ProcessTable';

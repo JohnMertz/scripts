@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ -z ${SWAYSOCK+x} ]; then
+  # xrandr command here
+  ::
+else
+  distrobox-enter -n debian -- ${HOME}/scripts/sway/toggle_outputs.sh
+fi

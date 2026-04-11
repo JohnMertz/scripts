@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ -z ${SWAYSOCK+x} ]; then
+  i3 exit
+else
+  sudo systemctl stop user@$(id -u).service
+  sway exit
+fi

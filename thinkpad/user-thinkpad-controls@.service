@@ -1,0 +1,10 @@
+[Unit]
+Description=Give ownership of backlight to %I
+
+[Service]
+ExecStart=chown %i:%i \
+  /sys/class/backlight/intel_backlight/brightness \
+  /sys/class/leds/tpacpi::kbd_backlight/brightness
+
+[Install]
+WantedBy=multi-user.target

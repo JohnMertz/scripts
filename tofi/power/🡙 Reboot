@@ -1,0 +1,3 @@
+#!/bin/bash
+rm /var/home/jpm/.local/state/ssh-agent.sock
+systemctl reboot -i

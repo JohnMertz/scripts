@@ -1,0 +1,7 @@
+#!/bin/bash
+if [ -z ${SWAYSOCK+x} ]; then
+  i3 reload
+else
+  swaymsg reload
+  ${HOME}/scripts/sway/restore_display.sh
+fi
