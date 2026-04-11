@@ -1,0 +1,6 @@
+#!/bin/bash
+
+# Passwordless sudo required
+/usr/bin/systemctl --user stop wg-quick@wg0
+/usr/bin/systemctl --user restart wg-quick@spamtagger
+echo -n 'spamtagger' > ${HOME}/.local/state/last_vpn

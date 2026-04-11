@@ -1,0 +1,4 @@
+#!/bin/bash
+
+/usr/bin/systemctl --user stop wg-quick@spamtagger
+/usr/bin/systemctl --user stop wg-quick@wg0
