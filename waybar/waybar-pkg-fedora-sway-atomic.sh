@@ -1,0 +1,1 @@
+/var/home/jpm/scripts/waybar/waybar-pkg-fedora-atomic.sh
