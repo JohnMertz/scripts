@@ -31,7 +31,7 @@ if [ ! -z "$CURRSSID" ]; then
   CURR="  $CURRSSID\n"
 fi
 
-CHENTRY=$(echo -e "${TOGGLE}\nmanual\n${CURR}${LIST}" | uniq -u | ${HOME}/.local/bin/tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Wi-Fi: " --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar.toml)
+CHENTRY=$(echo -e "${TOGGLE}\nmanual\n${CURR}${LIST}" | uniq -u | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Wi-Fi: " --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar.toml)
 if [[ $CHENTRY == "" ]]; then
   exit
 fi
@@ -41,7 +41,7 @@ CHSSID=$(echo "$CHENTRY" | sed -e 's/\([]\)  //g' | sed -e 's/ *$//g')
 # If the user inputs "manual" as their SSID in the start window, it will bring them to this screen
 if [ "$CHENTRY" = "manual" ]; then
   # Manual entry of the SSID and password (if appplicable)
-  MSSID=$(echo "enter the SSID of the network (SSID,password)" | ${HOME}/.local/bin/tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Password" --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar.toml)
+  MSSID=$(echo "enter the SSID of the network (SSID,password)" | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Password" --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar.toml)
   # Separating the password from the entered string
   MPASS=$(echo "$MSSID" | awk -F "," '{print $2}')
 
@@ -63,7 +63,7 @@ else
     nmcli con up "$CHSSID"
   else
     if [[ "$CHENTRY" =~ "" ]]; then
-      WIFIPASS=$(echo "" | ${HOME}/.local/bin/tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Password" --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar.toml)
+      WIFIPASS=$(echo "" | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Password" --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar.toml)
       if [[ $WIFIPASS == "if connection is stored, hit enter" ]]; then
         unset WIFIPASS
       fi

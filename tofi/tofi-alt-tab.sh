@@ -5,7 +5,7 @@ swaymsg -t get_tree |
   sed -e 's/^.*\-\- \(.*\)$/\1/' |
   sed -e 's/^\(.*\) [—-] .*$/\1/' |
   sed -e 's/^\([0-9]*\)\t*\(.*\)/\2 \1/' |
-  ${HOME}/.local/bin/tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --config $HOME/.dotfiles/.config/tofi/sidebar.toml --prompt-text Window | {
+  tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --config $HOME/.dotfiles/.config/tofi/sidebar.toml --prompt-text Window | {
   read -r
   #id=`echo $REPLY | rev | cut -d' ' -f1 | rev`
   id=$(echo $REPLY)

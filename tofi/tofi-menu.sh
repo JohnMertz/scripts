@@ -26,4 +26,4 @@ cd $1
 
 HEIGHT=$(swaymsg -t get_outputs | tr '\n' ' ' | sed -e 's/  */ /g' | sed -e 's/\(.*"focused": [a-z]*\),/\1\n/' | less | grep '"focused": true' | sed -e 's/.*"rect": {[^}]*"height": \([0-9]*\).*/\1/')
 
-exec "./$(find ./ -executable -type f | sed -E 's/\.\///' | ${HOME}/.local/bin/tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text 'Power: ' --height $HEIGHT --config ${HOME}/.dotfiles/.config/tofi/sidebar.toml --selection-background-padding='5,5,0,5')" 2>/dev/null
+exec "./$(find ./ -executable -type f | sed -E 's/\.\///' | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text 'Power: ' --height $HEIGHT --config ${HOME}/.dotfiles/.config/tofi/sidebar.toml --selection-background-padding='5,5,0,5')" 2>/dev/null

@@ -10,7 +10,7 @@ HEIGHT=$(swaymsg -t get_outputs | tr '\n' ' ' | sed -e 's/  */ /g' | sed -e 's/\
 OLD="$(wl-paste -p)"
 
 # Get input from Tofi
-INPUT="$(find ./ -type f | sed -E 's/\.\///' | ${HOME}/.local/bin/tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text 'Snippets: ' --height $HEIGHT --config ${HOME}/.dotfiles/.config/tofi/sidebar.toml)"
+INPUT="$(find ./ -type f | sed -E 's/\.\///' | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text 'Snippets: ' --height $HEIGHT --config ${HOME}/.dotfiles/.config/tofi/sidebar.toml)"
 
 # Ignore if returned file does not exist
 if [ -e "$INPUT" ]; then
