@@ -30,11 +30,14 @@ LOCK=/tmp/volume-lock
 [[ -d ${HOME}/.icons/$ICON_THEME ]] && ICON_DIR=${HOME}/.icons || ICON_DIR=/usr/share/icons
 
 CATEGORY="volume"
-SINK='@DEFAULT_SINK@'
-SOURCE='@DEFAULT_SOURCE@'
+SINK=$(pactl get-default-sink)
+SINK_DESC="$(pactl list sinks | grep -A1 $SINK | tail -n1 | cut -d'"' -f2)"
+SOURCE=$(pactl get-default-source)
+SOURCE_DESC="$(pactl list sources | grep -A1 $SOURCE | tail -n1 | cut -d'"' -f2)"
 
 # Detect current volume
 VOLUME=$(pactl get-sink-volume $SINK | head -n 1 | awk '{print $5}' | sed 's/%//')
+SENSITIVITY=$(pactl get-source-volume $SOURCE | head -n 1 | awk '{print $5}' | sed 's/%//')
 
 # Detect current muted status of output
 MUTE=$(pactl get-sink-mute $SINK | awk '{print $2}')
@@ -67,7 +70,7 @@ elif [[ "$1" == 'mute-source' ]]; then
 
 # If already muted and action is not to unmute, exit early
 elif [[ $MUTE == "yes" ]]; then
-  NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --icon=${HOME}/.icons/Gruvbox/48x48@2x/status/notification-audio-volume-off.svg -p${NOTIFY_ID} -t 1000 Muted "Ignoring change")
+  NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --icon=${HOME}/.icons/Gruvbox/48x48@2x/status/notification-audio-volume-off.svg -p ${NOTIFY_ID} -t 1000 Muted "Ignoring change")
   sleep 1
   echo $NOTIFY_ID >$ID_FILE
   rm $LOCK
@@ -178,10 +181,10 @@ fi
 pactl $ACTION >/dev/null
 
 # Fetch new mute state
-MUTE=$(pactl get-sink-mute $SINK | awk '{print $2}')
+MUTE_SINK=$(pactl get-sink-mute $SINK | awk '{print $2}')
 
 # Assign appropriate icon based on new volume value
-if [[ $VOLUME -eq 0 ]] || [[ $MUTE == "yes" ]]; then
+if [[ $VOLUME -eq 0 ]] || [[ $MUTE_SINK == "yes" ]]; then
   ICON="off"
 elif [[ $VOLUME -le 34 ]]; then
   ICON="low"
@@ -193,12 +196,22 @@ fi
 ICON=${ICON_DIR}/${ICON_THEME}/48x48@2x/status/notification-audio-volume-${ICON}.svg
 
 # Unique notifications if the action was to toggle mute
-if [ "$1" == 'mute-source' ] || [ "$MUTE" == "yes" ]; then
-  NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --icon=$ICON -p${NOTIFY_ID} -t 1000 Muted ${MUTE})
+if [ "$1" == 'mute-source' ]; then
+  MUTE_SOURCE=$(pactl get-source-mute $SOURCE | awk '{print $2}')
+  if [ "$MUTE_SOURCE" == "yes" ]; then
+    ICON=${ICON_DIR}/${ICON_THEME}/48x48@2x/status/notification-microphone-sensitivity-muted.svg
+    NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --hint=int:value:0 --icon=$ICON -p ${NOTIFY_ID} -t 1000 "$SOURCE_DESC" muted)
+  else
+    ICON=${ICON_DIR}/${ICON_THEME}/48x48@2x/status/notification-microphone-sensitivity-high.svg
+    NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --hint=int:value:$SENSITIVITY --icon=$ICON -p ${NOTIFY_ID} -t 1000 "$SOURCE_DESC" ${SENSITIVITY}%)
+  fi
+
+elif [ "$1" == 'mute-sink' ] && [ "$MUTE_SINK" == "yes" ]; then
+  NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --hint=int:value:0 --icon=$ICON -p ${NOTIFY_ID} -t 1000 "$SINK_DESC" muted)
 
 # Otherwise provide volume
 else
-  NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --hint=int:value:$VOLUME --icon=$ICON -p${NOTIFY_ID} -t 1000 Volume ${VOLUME}%)
+  NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --hint=int:value:$VOLUME --icon=$ICON -p ${NOTIFY_ID} -t 1000 "$SINK_DESC" ${VOLUME}%)
 fi
 
 # Update notification ID
