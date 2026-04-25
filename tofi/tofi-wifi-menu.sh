@@ -24,14 +24,19 @@ elif [[ "$CONSTATE" =~ "disabled" ]]; then
   TOGGLE="toggle on"
 fi
 
-HEIGHT=$(swaymsg -t get_outputs | tr '\n' ' ' | sed -e 's/  */ /g' | sed -e 's/\(.*"focused": [a-z]*\),/\1\n/' | less | grep '"focused": true' | sed -e 's/.*"rect": {[^}]*"height": \([0-9]*\).*/\1/')
+HEIGHT=$(swaymsg -t get_outputs | jq -r '.[] | select(.focused).rect.height')
+VERT=""
+if [[ "$(swaymsg -t get_outputs | jq -r '.[] | select(.focused).model')" == "DASUNG" ]]; then
+  VERT="-vertical"
+  HEIGHT=1564
+fi
 
 CURR=''
 if [ ! -z "$CURRSSID" ]; then
   CURR="  $CURRSSID\n"
 fi
 
-CHENTRY=$(echo -e "${TOGGLE}\nmanual\n${CURR}${LIST}" | uniq -u | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Wi-Fi: " --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar.toml)
+CHENTRY=$(echo -e "${TOGGLE}\nmanual\n${CURR}${LIST}" | uniq -u | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Wi-Fi: " --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar${VERT}.toml)
 if [[ $CHENTRY == "" ]]; then
   exit
 fi
@@ -41,7 +46,7 @@ CHSSID=$(echo "$CHENTRY" | sed -e 's/\([]\)  //g' | sed -e 's/ *$//g')
 # If the user inputs "manual" as their SSID in the start window, it will bring them to this screen
 if [ "$CHENTRY" = "manual" ]; then
   # Manual entry of the SSID and password (if appplicable)
-  MSSID=$(echo "enter the SSID of the network (SSID,password)" | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Password" --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar.toml)
+  MSSID=$(echo "enter the SSID of the network (SSID,password)" | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Password" --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar${VERT}.toml)
   # Separating the password from the entered string
   MPASS=$(echo "$MSSID" | awk -F "," '{print $2}')
 
@@ -63,7 +68,7 @@ else
     nmcli con up "$CHSSID"
   else
     if [[ "$CHENTRY" =~ "" ]]; then
-      WIFIPASS=$(echo "" | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Password" --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar.toml)
+      WIFIPASS=$(echo "" | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text "Password" --height $HEIGHT --width 340 -c $HOME/.dotfiles/.config/tofi/sidebar${VERT}.toml)
       if [[ $WIFIPASS == "if connection is stored, hit enter" ]]; then
         unset WIFIPASS
       fi

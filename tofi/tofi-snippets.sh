@@ -4,13 +4,18 @@
 # Maintain list of snippets in private repository
 cd ${HOME}/.private-scripts/snippets
 
-HEIGHT=$(swaymsg -t get_outputs | tr '\n' ' ' | sed -e 's/  */ /g' | sed -e 's/\(.*"focused": [a-z]*\),/\1\n/' | less | grep '"focused": true' | sed -e 's/.*"rect": {[^}]*"height": \([0-9]*\).*/\1/')
+HEIGHT=$(swaymsg -t get_outputs | jq -r '.[] | select(.focused).rect.height')
+VERT=""
+if [[ "$(swaymsg -t get_outputs | jq -r '.[] | select(.focused).model')" == "DASUNG" ]]; then
+  VERT="-vertical"
+  HEIGHT=1564
+fi
 
 # Back-up anything already in the clipboard
 OLD="$(wl-paste -p)"
 
 # Get input from Tofi
-INPUT="$(find ./ -type f | sed -E 's/\.\///' | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text 'Snippets: ' --height $HEIGHT --config ${HOME}/.dotfiles/.config/tofi/sidebar.toml)"
+INPUT="$(find ./ -type f | sed -E 's/\.\///' | sort | tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text 'Snippets: ' --height $HEIGHT --config ${HOME}/.dotfiles/.config/tofi/sidebar${VERT}.toml)"
 
 # Ignore if returned file does not exist
 if [ -e "$INPUT" ]; then

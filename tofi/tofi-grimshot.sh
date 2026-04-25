@@ -6,14 +6,19 @@ SAVE="Save:"
 
 cd ${HOME}/scripts/tofi/grimshot
 
-HEIGHT=$(swaymsg -t get_outputs | tr '\n' ' ' | sed -e 's/  */ /g' | sed -e 's/\(.*"focused": [a-z]*\),/\1\n/' | less | grep '"focused": true' | sed -e 's/.*"rect": {[^}]*"height": \([0-9]*\).*/\1/')
+HEIGHT=$(swaymsg -t get_outputs | jq -r '.[] | select(.focused).rect.height')
+VERT=""
+if [[ "$(swaymsg -t get_outputs | jq -r '.[] | select(.focused).model')" == "DASUNG" ]]; then
+  VERT="-vertical"
+  HEIGHT=1564
+fi
 if [[ "$(swaymsg -t get_outputs | jq length)" == 1 ]]; then
   OPTIONS="$(find ./ -type f -exec basename {} \; | grep -v 'All Outputs' | sort)"
 else
   OPTIONS="$(find ./ -type f -exec basename {} \; | sort)"
 fi
 
-INPUT=$(echo "$OPTIONS" | ${HOME}/.local/bin/tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text $SAVE --height $HEIGHT --config ${HOME}/.dotfiles/.config/tofi/sidebar.toml)
+INPUT=$(echo "$OPTIONS" | ${HOME}/.local/bin/tofi --output $(swaymsg -t get_outputs | jq -r '.[] | select(.focused ).name') --prompt-text $SAVE --height $HEIGHT --config ${HOME}/.dotfiles/.config/tofi/sidebar${VERT}.toml)
 
 [ "$INPUT" == '' ] && exit
 

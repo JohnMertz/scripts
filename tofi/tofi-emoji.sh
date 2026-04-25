@@ -2,8 +2,13 @@
 
 # Modified from: https://github.com/dln/wofi-emoji
 
-HEIGHT=$(swaymsg -t get_outputs | tr '\n' ' ' | sed -e 's/  */ /g' | sed -e 's/\(.*"focused": [a-z]*\),/\1\n/' | less | grep '"focused": true' | sed -e 's/.*"rect": {[^}]*"height": \([0-9]*\).*/\1/')
-sed '1,/^### DATA ###$/d' $0 | tofi --output `swaymsg -t get_outputs| jq -r '.[] | select(.focused ).name'` --prompt-text "❓" --config $HOME/.dotfiles/.config/tofi/sidebar.toml --height $HEIGHT --width 400 | cut -d ' ' -f 1 | tr -d '\n' | wl-copy --primary
+HEIGHT=$(swaymsg -t get_outputs | jq -r '.[] | select(.focused).rect.height')
+VERT=""
+if [[ "$(swaymsg -t get_outputs | jq -r '.[] | select(.focused).model')" == "DASUNG" ]]; then
+  VERT="-vertical"
+  HEIGHT=1564
+fi
+sed '1,/^### DATA ###$/d' $0 | tofi --output `swaymsg -t get_outputs| jq -r '.[] | select(.focused ).name'` --prompt-text "❓" --config $HOME/.dotfiles/.config/tofi/sidebar${VERT}.toml --height $HEIGHT --width 400 | cut -d ' ' -f 1 | tr -d '\n' | wl-copy --primary
 exit
 ### DATA ###
 😀 grinning face face smile happy joy :D grin
