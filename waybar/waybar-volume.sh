@@ -6,7 +6,7 @@
 function usage {
   cat <<EOF
 
-$0 [up|down|set|mute-sink|mute-source] <value>
+$0 [up|down|set|mute-sink|mute-source] <value> [--force]
 
               Return current sink volume when no argument is provided
 up <value>    Default 10 (percent)
@@ -14,6 +14,8 @@ down <value>  Default 10 (percent)
 set <value>   Value is required (percent)
 mute-sink     Default 'toggle'. Also supports 'yes', 'no'
 mute-source   Default 'toggle'. Also supports 'yes', 'no'
+
+--force       Un-mute on volume change
 EOF
   rm $LOCK
   exit
@@ -70,11 +72,15 @@ elif [[ "$1" == 'mute-source' ]]; then
 
 # If already muted and action is not to unmute, exit early
 elif [[ $MUTE == "yes" ]]; then
-  NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --icon=${HOME}/.icons/Gruvbox/48x48@2x/status/notification-audio-volume-off.svg -p ${NOTIFY_ID} -t 1000 Muted "Ignoring change")
-  sleep 1
-  echo $NOTIFY_ID >$ID_FILE
-  rm $LOCK
-  exit
+  if [[ "$FORCE" == 0 ]]; then
+    NOTIFY_ID=$(notify-send -e --app-name=waybar-volume --category=$CATEGORY --urgency=low --icon=${HOME}/.icons/Gruvbox/48x48@2x/status/notification-audio-volume-off.svg -p ${NOTIFY_ID} -t 1000 Muted "Ignoring change")
+    sleep 1
+    echo $NOTIFY_ID >$ID_FILE
+    rm $LOCK
+    exit
+  else
+    pactl set-sink-mute $SINK no
+  fi
 
 # 'up' increases volume of output
 elif [[ "$1" == 'up' ]]; then
@@ -93,6 +99,7 @@ else
   usage
 fi
 
+FORCE=0
 ## Handle default actions if no second argument is given
 if [ -z $2 ]; then
 
@@ -135,7 +142,9 @@ else
 
   elif [ "$1" == 'up' ]; then
     # 'up' expects a numeric second argument
-    if [[ $2 =~ ^[0-9]+$ ]]; then
+    if [[ "$2" == '--force' ]]; then
+      FORCE=1
+    elif [[ $2 =~ ^[0-9]+$ ]]; then
       # Attempt to increment by second argument
       ((VOLUME += $2))
       # Clamp to 150% if this is exceeded
@@ -148,7 +157,9 @@ else
 
   elif [ "$1" == 'down' ]; then
     # 'down' expects a numeric second argument
-    if [[ $2 =~ ^[0-9]+$ ]]; then
+    if [[ "$2" == '--force' ]]; then
+      FORCE=1
+    elif [[ $2 =~ ^[0-9]+$ ]]; then
       # Attempt to increment by second argument
       ((VOLUME -= $2))
       # Clamp to 150% if this is exceeded
@@ -175,6 +186,10 @@ else
     fi
 
   fi
+fi
+
+if [[ ! -z $3 ]] && [[ "$3" == '--force' ]]; then
+  FORCE=1
 fi
 
 # Apply action
