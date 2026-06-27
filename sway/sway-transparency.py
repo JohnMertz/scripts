@@ -33,7 +33,7 @@ def on_window_focus(opacity, ipc, event):
 
   if prev_focused == None or focused.id != prev_focused.id:  # https://github.com/swaywm/sway/issues/2859
     focused.command("opacity 1")
-    if prev_focused and workspace == prev_workspace and not prev_focused.sticky:
+    if prev_focused and workspace == prev_workspace and not (prev_focused.floating == "user_on" and prev_focused.sticky):
       prev_focused.command("opacity " + opacity)
     prev_focused = focused
     prev_workspace = workspace
@@ -84,7 +84,7 @@ def remove_opacity(ipc):
 
 def set_all(ipc,opacity):
   for window in ipc.get_tree():
-    if prev_focused.sticky:
+    if prev_focused.floating == "user_on" and prev_focused.sticky:
       window.command("opacity 1")
     else:
       window.command("opacity " + opacity)
@@ -121,7 +121,7 @@ if __name__ == "__main__":
   for window in ipc.get_tree():
     if window.focused:
       prev_focused = window
-    elif window.sticky:
+    elif window.floating == "user_on" and window.sticky:
       continue
     else:
       window.command("opacity " + args.opacity)
